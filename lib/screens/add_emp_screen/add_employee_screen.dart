@@ -1,6 +1,7 @@
 // import 'package:alghwalbi_core/alghwalbi_core.dart';
 import 'package:drift_flutter/database/app_database/app_database.dart';
 import 'package:drift_flutter/database_database_services/employee_services.dart';
+import 'package:drift_flutter/route_manager/route_services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:drift/drift.dart' as drift;
@@ -102,7 +103,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   decoration: const InputDecoration(labelText: 'Email'),
                   validator: (value) {
                     if ((value?.isEmpty ?? true) ||
-                        (value?.contains('@') ?? true)) {
+                        (value?.contains('@') == false)) {
                       return 'Please enter a valid email address';
                     }
                     return null;
@@ -141,13 +142,21 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                           lastName: drift.Value(_lastNameController.text),
                           phoneNumber: drift.Value(_phoneNumberController.text),
                           userName: drift.Value(_nameController.text));
-                      // AppNavigator.showLoading(context);
+                      AppNavigator.showLoading(context);
                       await EmployeeDatabaseServices.saveNewEmployee(
-                          newEmp: newEmpCompanion, context: context);
-                      // AppNavigator.resume();
+                              newEmp: newEmpCompanion, context: context)
+                          .then((_) {
+                        _nameController.clear();
+                        _firstNameController.clear();
+                        _lastNameController.clear();
+                        _emailController.clear();
+                        _phoneNumberController.clear();
+                        _birthDateController.clear();
+                      });
+                      AppNavigator.resume();
                     } else {
-                      // await AppNavigator.showMessage(context,
-                      //     "Please Provide Valid Data", MessageType.info);
+                      await AppNavigator.showMessage(context,
+                          "Please Provide Valid Data", MessageType.info);
                     }
                   },
                   child: const Text('Submit'),

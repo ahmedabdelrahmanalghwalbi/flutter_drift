@@ -1,5 +1,5 @@
-// import 'package:alghwalbi_core/alghwalbi_core.dart';
 import 'package:drift_flutter/database/app_database/app_database.dart';
+import 'package:drift_flutter/route_manager/route_services.dart';
 import 'package:flutter/material.dart';
 
 class EmployeeDatabaseServices {
@@ -9,13 +9,19 @@ class EmployeeDatabaseServices {
       {required EmployeeCompanion newEmp,
       required BuildContext context}) async {
     try {
-      await AppDataBase().insertEmployee(newEmp);
+      int val = await AppDataBase().insertEmployee(newEmp);
+      if (context.mounted) {
+        await AppNavigator.showMessage(
+            context,
+            "New Employee Inserted Successfully with id :-  ${val.toString()}",
+            MessageType.success);
+      }
     } catch (e) {
       if (context.mounted) {
-        // AppNavigator.showMessage(
-        //     context,
-        //     "Error Happened While Insert New Employee To Database",
-        //     MessageType.error);
+        await AppNavigator.showMessage(
+            context,
+            "Error Happened While Insert New Employee To Database",
+            MessageType.error);
       }
     }
   }
