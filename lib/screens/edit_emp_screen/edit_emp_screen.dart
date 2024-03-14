@@ -5,14 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:drift/drift.dart' as drift;
 
-class AddEmployeeScreen extends StatefulWidget {
-  const AddEmployeeScreen({super.key});
+class EditEmployeeScreen extends StatefulWidget {
+  final int empId;
+  const EditEmployeeScreen({required this.empId, super.key});
 
   @override
-  State<AddEmployeeScreen> createState() => _AddEmployeeScreenState();
+  State<EditEmployeeScreen> createState() => _EditEmployeeScreenState();
 }
 
-class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
+class _EditEmployeeScreenState extends State<EditEmployeeScreen> {
   DateTime? _selectedDate;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
@@ -40,6 +41,30 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    getEmployeeData();
+  }
+
+  Future<void> getEmployeeData() async {
+    AppNavigator.showLoading(context);
+    EmployeeData? empData = await EmployeeDatabaseServices.getEmployeeDataById(
+        context: context, empId: widget.empId);
+    if (empData != null) {
+      _nameController.text = empData.userName;
+      _firstNameController.text = empData.firstName;
+      _lastNameController.text = empData.lastName;
+      _emailController.text = empData.email;
+      _phoneNumberController.text = empData.phoneNumber;
+      _selectedDate = empData.birthDate;
+      _birthDateController.text =
+          intl.DateFormat('dd/MM/yyyy').format(empData.birthDate);
+    }
+    AppNavigator.resume();
+    setState(() {});
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _firstNameController.dispose();
@@ -54,7 +79,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Add Employee Screen"),
+          title: Text("Edit Employee :- ${widget.empId.toString()}"),
           centerTitle: true,
         ),
         body: Padding(
@@ -135,6 +160,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
                       EmployeeCompanion newEmpCompanion = EmployeeCompanion(
+                          id: drift.Value(widget.empId),
                           birthDate: drift.Value(_selectedDate!),
                           email: drift.Value(_emailController.text),
                           firstName: drift.Value(_firstNameController.text),
@@ -142,23 +168,15 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                           phoneNumber: drift.Value(_phoneNumberController.text),
                           userName: drift.Value(_nameController.text));
                       AppNavigator.showLoading(context);
-                      await EmployeeDatabaseServices.saveNewEmployee(
-                              newEmp: newEmpCompanion, context: context)
-                          .then((_) {
-                        _nameController.clear();
-                        _firstNameController.clear();
-                        _lastNameController.clear();
-                        _emailController.clear();
-                        _phoneNumberController.clear();
-                        _birthDateController.clear();
-                      });
+                      await EmployeeDatabaseServices.updateEmployee(
+                          newEmp: newEmpCompanion, context: context);
                       AppNavigator.resume();
                     } else {
                       await AppNavigator.showMessage(context,
                           "Please Provide Valid Data", MessageType.info);
                     }
                   },
-                  child: const Text('Submit'),
+                  child: const Text('Edit'),
                 ),
               ],
             ),

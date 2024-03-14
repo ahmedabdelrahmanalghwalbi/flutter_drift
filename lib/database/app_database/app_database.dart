@@ -26,7 +26,7 @@ class AppDataBase extends _$AppDataBase {
   Future<int> insertEmployee(EmployeeCompanion empEntity) async =>
       await into(employee).insert(empEntity);
   //delete Employee (Returns the amount of rows that were deleted by this statement directly)
-  Future<int> deleteEmployee(int id) async =>
+  Future<int?> deleteEmployee(int id) async =>
       await (delete(employee)..where((tbl) => tbl.id.equals(id))).go();
 }
 
